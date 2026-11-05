@@ -3,29 +3,40 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
+    
 
 jobs:
   ci:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install Dependencies
         run: npm install
 
       - name: Run Tests
-        run: npm run test
+        run: npm test
 
   cd:
     needs: ci
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy Latest Code
-        run: |
-          cd /home/ubuntu/github-ci-cd-project
-          git pull origin main
-          npm install
-          pm2 restart index --update-env
+      - name: Deploy Application to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/github-ci-cd-project
+            git pull origin main
+            npm install
+            pm2 restart index --update-env
