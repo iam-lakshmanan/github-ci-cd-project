@@ -39,4 +39,4 @@ jobs:
             cd /home/ubuntu/github-ci-cd-project
             git pull origin main
             npm install
-            pm2 restart index --update-env
+            pm2 restart CICD
